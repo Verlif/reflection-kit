@@ -1,5 +1,6 @@
 package idea.verlif.reflection.util;
 
+import idea.verlif.reflection.domain.ActualClass;
 import idea.verlif.reflection.domain.ClassGrc;
 import idea.verlif.reflection.domain.MethodGrc;
 import idea.verlif.reflection.domain.SFunction;
@@ -34,6 +35,21 @@ public class ReflectUtil {
             cla = cla.getSuperclass();
         } while (cla != null);
         return fields;
+    }
+
+    /**
+     * 获取类的所有方法
+     *
+     * @param cla 目标类
+     * @return 目标类的方法列表，包括父类
+     */
+    public static List<Method> getAllMethods(Class<?> cla) {
+        List<Method> methods = new ArrayList<>();
+        do {
+            Collections.addAll(methods, cla.getDeclaredMethods());
+            cla = cla.getSuperclass();
+        } while (cla != null);
+        return methods;
     }
 
     /**
@@ -124,23 +140,14 @@ public class ReflectUtil {
      */
     public static MethodGrc getMethodGrc(Method method, Class<?> target) throws ClassNotFoundException, IllegalAccessException, NoSuchFieldException {
         Map<String, ClassGrc> genericsMap = getGenericsMap(target);
-        Field signature = Method.class.getDeclaredField("signature");
-        boolean acc = signature.isAccessible();
-        if (!acc) {
-            signature.setAccessible(true);
-        }
-        String sig = (String) signature.get(method);
-        if (!acc) {
-            signature.setAccessible(false);
-        }
+        String sig = SignatureUtil.getSignature(method);
         // 有泛型类
         if (sig != null) {
             // 解析泛型
             if (sig.charAt(0) == '<') {
                 String generics = sig.substring(1, sig.indexOf('>') - 1);
                 sig = sig.substring(generics.length() + 3);
-                System.out.println("泛型 -- " + generics);
-                List<String> sigList = splitSignature(generics);
+                List<String> sigList = SignatureUtil.splitSignature(generics);
                 for (String s : sigList) {
                     if (s.length() > 0) {
                         int i = s.indexOf(':');
@@ -161,10 +168,10 @@ public class ReflectUtil {
                 } else {
                     String params = sig.substring(1, end - 1);
                     sig = sig.substring(params.length() + 3);
-                    List<String> sigList = splitSignature(params);
+                    List<String> sigList = SignatureUtil.splitSignature(params);
                     infos = new ClassGrc[sigList.size()];
                     for (int i = 0; i < sigList.size(); i++) {
-                        ClassGrc info = parseClassBySignature(sigList.get(i), genericsMap);
+                        ClassGrc info = SignatureUtil.parseClassBySignature(sigList.get(i), genericsMap);
                         infos[i] = info;
                     }
                 }
@@ -174,7 +181,9 @@ public class ReflectUtil {
             if (sig.length() > 0) {
                 // 是否是泛型
                 String sigName = sig.substring(0, sig.length() - 1);
-                info = parseClassBySignature(sigName, genericsMap);
+                if (sigName.length() > 0) {
+                    info = SignatureUtil.parseClassBySignature(sigName, genericsMap);
+                }
             }
             return new MethodGrc(info, infos);
         } else {
@@ -198,58 +207,35 @@ public class ReflectUtil {
         return getMethodGrc(method, method.getDeclaringClass());
     }
 
-    private static List<String> splitSignature(String signatureStr) {
-        List<String> list = new ArrayList<>();
-        if (signatureStr.indexOf('<') == -1) {
-            Collections.addAll(list, signatureStr.split(";"));
-        } else {
-            char[] chars = signatureStr.toCharArray();
-            int count = 0;
-            for (int i = 0; i < chars.length; i++) {
-                char c = chars[i];
-                if (c == ';' && count == 0) {
-                    list.add(signatureStr.substring(0, i));
-                    signatureStr = signatureStr.substring(i);
-                } else if (c == '<') {
-                    count++;
-                } else if (c == '>') {
-                    count--;
-                }
-            }
-            if (signatureStr.length() > 0) {
-                list.add(signatureStr);
-            }
-        }
-        return list;
+    public static ClassGrc getClassGrcFromField(Field field) throws NoSuchFieldException, IllegalAccessException, ClassNotFoundException {
+        return getClassGrcFromField(field, field.getDeclaringClass());
     }
 
-    private static ClassGrc parseClassBySignature(String signature, Map<String, ClassGrc> genericsMap) throws ClassNotFoundException {
-        // 判断是否有泛型定义
-        int tag = signature.indexOf('<');
-        // 不含有泛型
-        if (tag < 0) {
-            // 判断自身是否是泛型
-            if (signature.charAt(0) == 'T') {
-                signature = signature.substring(1);
-                return genericsMap.computeIfAbsent(signature, s -> new ClassGrc());
-            } else {
-                signature = signature.substring(1).replace("/", ".");
-                Class<?> cl = Class.forName(signature);
-                return new ClassGrc(cl);
-            }
-        } else {
-            String tarName = signature.substring(1, tag).replace("/", ".");
-            String genericsStr = signature.substring(tag + 1, signature.length() - 2);
-            List<String> genericsNames = splitSignature(genericsStr);
-            ClassGrc[] genericsInfo = new ClassGrc[genericsNames.size()];
-            for (int i = 0; i < genericsNames.size(); i++) {
-                if (genericsNames.get(i).length() > 0) {
-                    genericsInfo[i] = parseClassBySignature(genericsNames.get(i), genericsMap);
-                }
-            }
-            Class<?> target = Class.forName(tarName);
-            return new ClassGrc(target, genericsInfo);
+    public static ClassGrc getClassGrcFromField(Field field, Class<?> target) throws NoSuchFieldException, IllegalAccessException, ClassNotFoundException {
+        Map<String, ClassGrc> genericsMap = getGenericsMap(target);
+        String sig = SignatureUtil.getSignature(field);
+        return SignatureUtil.parseClassBySignature(sig.substring(0, sig.length() - 1), genericsMap);
+    }
+
+    public static ClassGrc getClassGrcFromField(Field field, Map<String, ClassGrc> genericsMap) throws NoSuchFieldException, IllegalAccessException, ClassNotFoundException {
+        String sig = SignatureUtil.getSignature(field);
+        return SignatureUtil.parseClassBySignature(sig.substring(0, sig.length() - 1), genericsMap);
+    }
+
+    public static ActualClass getActualClass(Class<?> target) throws NoSuchFieldException, IllegalAccessException, ClassNotFoundException {
+        Map<String, ClassGrc> genericsMap = getGenericsMap(target);
+        List<Field> allFields = getAllFields(target);
+        Map<String, ClassGrc> fieldGrcMap = new HashMap<>(allFields.size());
+        for (Field field : allFields) {
+            fieldGrcMap.put(field.getName(), getClassGrcFromField(field, genericsMap));
         }
+        List<Method> allMethods = getAllMethods(target);
+        Map<String, MethodGrc> methodGrcMap = new HashMap<>(allMethods.size());
+        for (Method method : allMethods) {
+            methodGrcMap.put(method.getName(), getMethodGrc(method, target));
+        }
+
+        return new ActualClass(getClassGrcFromType(target), fieldGrcMap, methodGrcMap);
     }
 
     /**

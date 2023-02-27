@@ -1,5 +1,6 @@
 package idea.verlif.reflection.domain;
 
+import java.lang.reflect.Method;
 import java.util.Arrays;
 
 public final class MethodGrc {

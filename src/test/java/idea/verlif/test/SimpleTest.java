@@ -1,11 +1,9 @@
 package idea.verlif.test;
 
-import idea.verlif.reflection.domain.MethodGrc;
 import idea.verlif.reflection.util.ReflectUtil;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 
@@ -13,30 +11,8 @@ public class SimpleTest {
 
     @Test
     public void test() throws IOException, ClassNotFoundException, NoSuchMethodException, NoSuchFieldException, IllegalAccessException {
-//        Method a = TestA.class.getDeclaredMethod("a");
-//        ReflectUtil.getGenericsType(a);
-//
-//        Method b = TestA.class.getDeclaredMethod("b");
-//        ReflectUtil.getGenericsType(b);
-//
-//        Method b2 = TestA.class.getDeclaredMethod("b2", Object.class);
-//        ReflectUtil.getGenericsType(b2);
-//
-//        Method c = TestA.class.getDeclaredMethod("c", String.class, Integer.class);
-//        ReflectUtil.getGenericsType(c);
-//
-//        Method d = TestA.class.getDeclaredMethod("d", Map.class);
-//        ReflectUtil.getGenericsType(d);
-//
-//        Method ta = SimpleTest.class.getDeclaredMethod("testA");
-//        ReflectUtil.getGenericsType(ta);
-
-        Method te = TestB.class.getMethod("getT");
-        MethodGrc methodGrc = ReflectUtil.getMethodGrc(te, TestB.class);
-        System.out.println(methodGrc);
-        Method tf = TestB.class.getMethod("f", Object.class, Object.class);
-        methodGrc = ReflectUtil.getMethodGrc(tf, TestB.class);
-        System.out.println(methodGrc);
+        System.out.println(ReflectUtil.getActualClass(TestA.class));
+        System.out.println(ReflectUtil.getActualClass(TestB.class));
     }
 
     public TestA<String, List<String>> testA() {
@@ -60,6 +36,10 @@ public class SimpleTest {
 
         private V v;
 
+        private List<String> list;
+
+        private Map<List<String>, R> map;
+
         public R getR() {
             return r;
         }
@@ -76,7 +56,8 @@ public class SimpleTest {
             this.v = v;
         }
 
-        public void a() {}
+        public void a() {
+        }
 
         public <T> T b() {
             return null;
