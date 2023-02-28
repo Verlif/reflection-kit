@@ -32,7 +32,7 @@ public class SignatureUtil {
         // 不含有泛型
         if (tag < 0) {
             // 判断自身是否是泛型
-            if (signature.charAt(0) == 'T') {
+            if (signature.charAt(0) == 'T' || signature.charAt(0) == '*') {
                 signature = signature.substring(1);
                 return genericsMap.computeIfAbsent(signature, s -> new ClassGrc());
             } else {
@@ -65,7 +65,7 @@ public class SignatureUtil {
             for (int i = 0; i < chars.length; i++) {
                 char c = chars[i];
                 if (c == ';' && count == 0) {
-                    list.add(signatureStr.substring(0, ++i));
+                    list.add(signatureStr.substring(0, i++));
                     signatureStr = signatureStr.substring(i);
                 } else if (c == '<') {
                     count++;
