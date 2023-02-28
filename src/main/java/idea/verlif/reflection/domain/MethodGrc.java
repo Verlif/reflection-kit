@@ -5,13 +5,29 @@ import java.util.Arrays;
 
 public final class MethodGrc {
 
+    /**
+     * 方法对象
+     */
+    private final Method method;
+
+    /**
+     * 方法返回值
+     */
     private final ClassGrc result;
 
+    /**
+     * 方法参数
+     */
     private final ClassGrc[] arguments;
 
-    public MethodGrc(ClassGrc result, ClassGrc[] arguments) {
+    public MethodGrc(Method method, ClassGrc result, ClassGrc[] arguments) {
+        this.method = method;
         this.result = result;
         this.arguments = arguments;
+    }
+
+    public Method getMethod() {
+        return method;
     }
 
     public ClassGrc getResult() {
@@ -24,8 +40,9 @@ public final class MethodGrc {
 
     @Override
     public String toString() {
-        return "MethodInfo{" +
-                "result=" + result +
+        return "MethodGrc{" +
+                "method=" + method +
+                ", result=" + result +
                 ", arguments=" + Arrays.toString(arguments) +
                 '}';
     }

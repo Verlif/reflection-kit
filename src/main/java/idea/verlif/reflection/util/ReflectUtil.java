@@ -1,9 +1,6 @@
 package idea.verlif.reflection.util;
 
-import idea.verlif.reflection.domain.ActualClass;
-import idea.verlif.reflection.domain.ClassGrc;
-import idea.verlif.reflection.domain.MethodGrc;
-import idea.verlif.reflection.domain.SFunction;
+import idea.verlif.reflection.domain.*;
 import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
 import sun.reflect.generics.repository.ClassRepository;
 
@@ -99,7 +96,7 @@ public class ReflectUtil {
             }
             TypeVariable<?>[] parameters = genericInfo.getTypeParameters();
             for (int i = 0; i < parameters.length; i++) {
-                genericsMap.put(parameters[i].getName(), getClassGrcFromType(arguments[i]));
+                genericsMap.put(parameters[i].getName(), getClassGrc(arguments[i]));
             }
         }
         if (rawType instanceof Class) {
@@ -114,14 +111,14 @@ public class ReflectUtil {
      *
      * @param type 目标Type
      */
-    public static ClassGrc getClassGrcFromType(Type type) {
+    public static ClassGrc getClassGrc(Type type) {
         if (type instanceof ParameterizedType) {
             ParameterizedTypeImpl pType = (ParameterizedTypeImpl) type;
             Class<?> rawType = pType.getRawType();
             Type[] arguments = pType.getActualTypeArguments();
             ClassGrc[] argumentInfos = new ClassGrc[arguments.length];
             for (int i = 0; i < argumentInfos.length; i++) {
-                argumentInfos[i] = getClassGrcFromType(arguments[i]);
+                argumentInfos[i] = getClassGrc(arguments[i]);
             }
             return new ClassGrc(rawType, argumentInfos);
         } else if (type instanceof Class) {
@@ -129,6 +126,41 @@ public class ReflectUtil {
         } else {
             return new ClassGrc();
         }
+    }
+
+    /**
+     * 获取属性的泛型信息
+     *
+     * @param field 目标属性
+     * @return 属性的泛型信息
+     */
+    public static FieldGrc getFieldGrc(Field field) throws NoSuchFieldException, IllegalAccessException, ClassNotFoundException {
+        return getFieldGrc(field, field.getDeclaringClass());
+    }
+
+    /**
+     * 获取属性的泛型信息
+     *
+     * @param field  目标属性
+     * @param target 属性的目标所属类
+     * @return 属性的泛型信息
+     */
+    public static FieldGrc getFieldGrc(Field field, Class<?> target) throws NoSuchFieldException, IllegalAccessException, ClassNotFoundException {
+        Map<String, ClassGrc> genericsMap = getGenericsMap(target);
+        return getFieldGrc(field, genericsMap);
+    }
+
+    /**
+     * 获取属性的泛型信息
+     *
+     * @param field       目标属性
+     * @param genericsMap 属性的泛型表
+     * @return 属性的泛型信息
+     */
+    public static FieldGrc getFieldGrc(Field field, Map<String, ClassGrc> genericsMap) throws NoSuchFieldException, IllegalAccessException, ClassNotFoundException {
+        String sig = SignatureUtil.getSignature(field);
+        ClassGrc classGrc = SignatureUtil.parseClassBySignature(sig.substring(0, sig.length() - 1), genericsMap);
+        return new FieldGrc(field, classGrc.getTarget(), classGrc.getGenericsInfos());
     }
 
     /**
@@ -185,15 +217,15 @@ public class ReflectUtil {
                     info = SignatureUtil.parseClassBySignature(sigName, genericsMap);
                 }
             }
-            return new MethodGrc(info, infos);
+            return new MethodGrc(method, info, infos);
         } else {
-            ClassGrc result = getClassGrcFromType(method.getReturnType());
+            ClassGrc result = getClassGrc(method.getReturnType());
             Class<?>[] parameterTypes = method.getParameterTypes();
             ClassGrc[] argumentInfos = new ClassGrc[parameterTypes.length];
             for (int i = 0; i < parameterTypes.length; i++) {
-                argumentInfos[i] = getClassGrcFromType(parameterTypes[i]);
+                argumentInfos[i] = getClassGrc(parameterTypes[i]);
             }
-            return new MethodGrc(result, argumentInfos);
+            return new MethodGrc(method, result, argumentInfos);
         }
     }
 
@@ -207,27 +239,18 @@ public class ReflectUtil {
         return getMethodGrc(method, method.getDeclaringClass());
     }
 
-    public static ClassGrc getClassGrcFromField(Field field) throws NoSuchFieldException, IllegalAccessException, ClassNotFoundException {
-        return getClassGrcFromField(field, field.getDeclaringClass());
-    }
-
-    public static ClassGrc getClassGrcFromField(Field field, Class<?> target) throws NoSuchFieldException, IllegalAccessException, ClassNotFoundException {
-        Map<String, ClassGrc> genericsMap = getGenericsMap(target);
-        String sig = SignatureUtil.getSignature(field);
-        return SignatureUtil.parseClassBySignature(sig.substring(0, sig.length() - 1), genericsMap);
-    }
-
-    public static ClassGrc getClassGrcFromField(Field field, Map<String, ClassGrc> genericsMap) throws NoSuchFieldException, IllegalAccessException, ClassNotFoundException {
-        String sig = SignatureUtil.getSignature(field);
-        return SignatureUtil.parseClassBySignature(sig.substring(0, sig.length() - 1), genericsMap);
-    }
-
+    /**
+     * 获取类的泛型转换信息
+     *
+     * @param target 目标类
+     * @return 真实类信息
+     */
     public static ActualClass getActualClass(Class<?> target) throws NoSuchFieldException, IllegalAccessException, ClassNotFoundException {
         Map<String, ClassGrc> genericsMap = getGenericsMap(target);
         List<Field> allFields = getAllFields(target);
-        Map<String, ClassGrc> fieldGrcMap = new HashMap<>(allFields.size());
+        Map<String, FieldGrc> fieldGrcMap = new HashMap<>(allFields.size());
         for (Field field : allFields) {
-            fieldGrcMap.put(field.getName(), getClassGrcFromField(field, genericsMap));
+            fieldGrcMap.put(field.getName(), getFieldGrc(field, genericsMap));
         }
         List<Method> allMethods = getAllMethods(target);
         Map<String, MethodGrc> methodGrcMap = new HashMap<>(allMethods.size());
@@ -235,7 +258,7 @@ public class ReflectUtil {
             methodGrcMap.put(method.getName(), getMethodGrc(method, target));
         }
 
-        return new ActualClass(getClassGrcFromType(target), fieldGrcMap, methodGrcMap);
+        return new ActualClass(getClassGrc(target), fieldGrcMap, methodGrcMap);
     }
 
     /**

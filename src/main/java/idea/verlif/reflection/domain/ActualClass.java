@@ -10,7 +10,7 @@ public class ActualClass {
 
     private final ClassGrc target;
 
-    private final Map<String, ClassGrc> fieldGrcMap;
+    private final Map<String, FieldGrc> fieldGrcMap;
 
     private final Map<String, MethodGrc> methodGrcMap;
 
@@ -22,13 +22,13 @@ public class ActualClass {
         this(target, new HashMap<>(), new HashMap<>());
     }
 
-    public ActualClass(Class<?> target, Map<String, ClassGrc> fieldGrcMap, Map<String, MethodGrc> methodGrcMap) {
+    public ActualClass(Class<?> target, Map<String, FieldGrc> fieldGrcMap, Map<String, MethodGrc> methodGrcMap) {
         this.target = new ClassGrc(target);
         this.fieldGrcMap = fieldGrcMap;
         this.methodGrcMap = methodGrcMap;
     }
 
-    public ActualClass(ClassGrc target, Map<String, ClassGrc> fieldGrcMap, Map<String, MethodGrc> methodGrcMap) {
+    public ActualClass(ClassGrc target, Map<String, FieldGrc> fieldGrcMap, Map<String, MethodGrc> methodGrcMap) {
         this.target = target;
         this.fieldGrcMap = fieldGrcMap;
         this.methodGrcMap = methodGrcMap;
@@ -38,7 +38,7 @@ public class ActualClass {
         return target;
     }
 
-    public Map<String, ClassGrc> getFieldGrcMap() {
+    public Map<String, FieldGrc> getFieldGrcMap() {
         return fieldGrcMap;
     }
 
