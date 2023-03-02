@@ -77,6 +77,25 @@ public class ReflectUtil {
     /**
      * 获取参数类型的泛型标记表
      *
+     * @param classGrc 类信息
+     * @return 参数类型包含的泛型表
+     */
+    public static Map<String, ClassGrc> getGenericsMap(ClassGrc classGrc) throws NoSuchFieldException, IllegalAccessException {
+        if (classGrc.getGenericsInfos().length == 0) {
+            return getGenericsMap(classGrc.getClass());
+        }
+        Map<String, ClassGrc> genericsMap = new HashMap<>();
+        TypeVariable<? extends Class<?>>[] typeParameters = classGrc.getTarget().getTypeParameters();
+        ClassGrc[] genericsInfos = classGrc.getGenericsInfos();
+        for (int i = 0, size = Math.min(typeParameters.length, genericsInfos.length); i < size; i++) {
+            genericsMap.put(typeParameters[i].getName(), genericsInfos[i]);
+        }
+        return genericsMap;
+    }
+
+    /**
+     * 获取参数类型的泛型标记表
+     *
      * @param pType 参数类型
      * @return 参数类型包含的泛型表
      */
