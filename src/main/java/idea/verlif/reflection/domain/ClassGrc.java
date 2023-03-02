@@ -5,7 +5,7 @@ import java.util.Arrays;
 /**
  * 类泛型信息
  */
-public final class ClassGrc {
+public class ClassGrc {
 
     /**
      * 目标类型

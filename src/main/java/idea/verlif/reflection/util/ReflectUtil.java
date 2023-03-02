@@ -159,8 +159,12 @@ public class ReflectUtil {
      */
     public static FieldGrc getFieldGrc(Field field, Map<String, ClassGrc> genericsMap) throws NoSuchFieldException, IllegalAccessException, ClassNotFoundException {
         String sig = SignatureUtil.getSignature(field);
-        ClassGrc classGrc = SignatureUtil.parseClassBySignature(sig.substring(0, sig.length() - 1), genericsMap);
-        return new FieldGrc(field, classGrc.getTarget(), classGrc.getGenericsInfos());
+        if (sig == null) {
+            return new FieldGrc(field);
+        } else {
+            ClassGrc classGrc = SignatureUtil.parseClassBySignature(sig.substring(0, sig.length() - 1), genericsMap);
+            return new FieldGrc(field, classGrc.getTarget(), classGrc.getGenericsInfos());
+        }
     }
 
     /**
