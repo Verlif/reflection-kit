@@ -63,6 +63,18 @@ public class FieldUtil {
         if (field == null) {
             throw new NoSuchFieldException(fieldName);
         }
+        return getFieldValue(target, fieldName);
+    }
+
+    /**
+     * 从对象中获取属性值
+     *
+     * @param target 目标对象
+     * @param field  属性对象
+     * @return 目标对象中的属性值
+     * @throws NoSuchFieldException 在目标对象中不存在对应属性
+     */
+    public static Object getFieldValue(Object target, Field field) throws NoSuchFieldException {
         Object value = null;
         boolean acc = field.isAccessible();
         if (!acc) {
