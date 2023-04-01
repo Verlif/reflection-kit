@@ -63,7 +63,7 @@ public class FieldUtil {
         if (field == null) {
             throw new NoSuchFieldException(fieldName);
         }
-        return getFieldValue(target, fieldName);
+        return getFieldValue(target, field);
     }
 
     /**
@@ -103,6 +103,18 @@ public class FieldUtil {
         if (field == null) {
             throw new NoSuchFieldException(fieldName);
         }
+        setFieldValue(target, field, value);
+    }
+
+    /**
+     * 设置对象的属性值
+     *
+     * @param target 目标对象
+     * @param field  属性对象
+     * @param value  目标对象中的属性值
+     * @throws NoSuchFieldException 在目标对象中不存在对应属性
+     */
+    public static void setFieldValue(Object target, Field field, Object value) throws NoSuchFieldException {
         boolean acc = field.isAccessible();
         if (!acc) {
             field.setAccessible(true);
@@ -144,7 +156,6 @@ public class FieldUtil {
             throw new RuntimeException(e);
         }
     }
-
 
     /**
      * 获取属性的泛型信息

@@ -1,7 +1,5 @@
 # 反射工具
 
-[![](https://jitpack.io/v/Verlif/reflection-kit.svg)](https://jitpack.io/#Verlif/reflection-kit)
-
 由于做一些框架或是组件经常用到反射，所以整理出这个工具，用来简化一些操作。
 
 可用方法：
@@ -24,3 +22,53 @@
   - 例如从`Person::getName`获取到`name`属性
 - 通过参数匹配实例化类
   - 例如`ReflectUtil.newInstance(Person, "小明")`会通过`Person(String)`构造器来构造出`person`的实例对象
+- 对对象属性进行`set`个`get`
+
+## 依赖
+
+1. 添加Jitpack仓库源
+
+   maven
+
+    ```xml
+    <repositories>
+       <repository>
+           <id>jitpack.io</id>
+           <url>https://jitpack.io</url>
+       </repository>
+    </repositories>
+    ```
+
+   Gradle
+
+    ```text
+    allprojects {
+      repositories {
+          maven { url 'https://jitpack.io' }
+      }
+    }
+    ```
+
+2. 添加依赖
+
+   __lastVersion__ [![reflection-kit](https://jitpack.io/v/Verlif/reflection-kit.svg)](https://jitpack.io/#Verlif/reflection-kit)
+
+   maven
+
+   ```xml
+      <dependencies>
+          <dependency>
+              <groupId>com.github.Verlif</groupId>
+              <artifactId>reflection-kit</artifactId>
+              <version>lastVersion</version>
+          </dependency>
+      </dependencies>
+   ```
+
+   Gradle
+
+   ```text
+   dependencies {
+     implementation 'com.github.Verlif:reflection-kit:lastVersion'
+   }
+   ```
