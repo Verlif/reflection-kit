@@ -235,4 +235,46 @@ public class ReflectUtil {
         return cl;
     }
 
+
+    /**
+     * 判断两个类是否相似。方法的两个参数顺序并无影响，只会比较两个类是否是同一个类型，包装类与基本类型也会判定相似。
+     * @param cla1 左侧类
+     * @param cla2 右侧类
+     * @return 两个类是否相似。
+     */
+    public static boolean likeClass(Class<?> cla1, Class<?> cla2) {
+        if (cla1 == cla2) {
+            return true;
+        }
+        if (!cla1.isPrimitive() && !cla2.isPrimitive()) {
+            return false;
+        }
+        Class<?> c1;
+        Class<?> c2;
+        if (cla1.isPrimitive()) {
+            c1 = cla1;
+            c2 = cla2;
+        } else {
+            c1 = cla2;
+            c2 = cla1;
+        }
+        if (c1 == int.class) {
+            return Integer.class == c2;
+        } else if (c1 == float.class) {
+            return Float.class == c2;
+        } else if (c1 == long.class) {
+            return Long.class == c2;
+        } else if (c1 == char.class) {
+            return Character.class == c2;
+        } else if (c1 == double.class) {
+            return Double.class == c2;
+        } else if (c1 == boolean.class) {
+            return Boolean.class == c2;
+        } else if (c1 == byte.class) {
+            return Byte.class == c2;
+        } else if (c1 == short.class) {
+            return Short.class == c2;
+        }
+        return false;
+    }
 }

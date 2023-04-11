@@ -5,6 +5,8 @@ import idea.verlif.reflection.domain.MethodGrc;
 import idea.verlif.reflection.domain.SFunction;
 
 import java.lang.invoke.SerializedLambda;
+import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -109,6 +111,44 @@ public class MethodUtil {
     }
 
     /**
+     * 从类中获取指定方法
+     *
+     * @param target     目标类
+     * @param name       方法名
+     * @param paramTypes 方法参数类型数组
+     * @return 获取到的方法
+     */
+    public static Method getMethod(Class<?> target, String name, Class<?>... paramTypes) {
+        Method like = null;
+        METHOD_LOOP: for (Method method : getAllMethods(target)) {
+            if (method.getName().equals(name)) {
+                int mpl = method.getParameterCount();
+                int pl = paramTypes.length;
+                // 匹配时，pl的值必定小于或等于mpl。小于的情况必定只小1且方法最后一个参数是数组
+                if (mpl > pl + 1 || mpl < pl) {
+                    continue;
+                }
+                Class<?>[] parameterTypes = method.getParameterTypes();
+                if (mpl == pl + 1 && !parameterTypes[mpl - 1].isArray()) {
+                    continue;
+                }
+                for (int i = 0; i < pl; i++) {
+                    if (!ReflectUtil.likeClass(parameterTypes[i], paramTypes[i])) {
+                        // I know what I do.
+                        continue METHOD_LOOP;
+                    }
+                }
+                if (pl == mpl) {
+                    return method;
+                } else {
+                    like = method;
+                }
+            }
+        }
+        return like;
+    }
+
+    /**
      * 获取Lambda表达式对应的属性
      *
      * @param function lambda表达式，对应get方法
@@ -146,6 +186,39 @@ public class MethodUtil {
         } catch (ClassNotFoundException | NoSuchMethodException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * 执行对象的方法。自动识别方法最后一位参数是数组的方法。
+     *
+     * @param target     目标对象
+     * @param methodName 执行的方法名
+     * @param params     执行方法的参数
+     * @return 方法执行返回值
+     */
+    public static Object invoke(Object target, String methodName, Object... params) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
+        Class<?>[] paramTypes = new Class[params.length];
+        for (int i = 0; i < params.length; i++) {
+            paramTypes[i] = params[i].getClass();
+        }
+        Method method = getMethod(target.getClass(), methodName, paramTypes);
+        if (method == null) {
+            throw new NoSuchMethodException();
+        }
+        return invoke(target, method, params);
+    }
+
+    public static Object invoke(Object target, Method method, Object... params) throws InvocationTargetException, IllegalAccessException {
+        int pl = params.length;
+        if (method.getParameterCount() > pl) {
+            Class<?>[] parameterTypes = method.getParameterTypes();
+            if (parameterTypes[pl].isArray()) {
+                Object[] tmp = Arrays.copyOf(params, pl + 1);
+                tmp[pl] = Array.newInstance(parameterTypes[pl].getComponentType(), 0);
+                params = tmp;
+            }
+        }
+        return method.invoke(target, params);
     }
 
 }

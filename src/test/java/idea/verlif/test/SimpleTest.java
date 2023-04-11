@@ -1,23 +1,20 @@
 package idea.verlif.test;
 
-import idea.verlif.reflection.domain.ActualClass;
-import idea.verlif.reflection.domain.FieldGrc;
-import idea.verlif.reflection.util.FieldUtil;
+import idea.verlif.reflection.util.MethodUtil;
 import idea.verlif.reflection.util.ReflectUtil;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 public class SimpleTest {
 
     @Test
-    public void test() throws IOException, ClassNotFoundException, NoSuchMethodException, NoSuchFieldException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        ActualClass aClass = ReflectUtil.getActualClass(TestA.class);
-
+    public void test() throws Exception {
+        MethodUtil.invoke(new TestB<String>(), "aList", "123");
+        System.out.println(ReflectUtil.likeClass(Integer.class, int.class));
+        System.out.println(ReflectUtil.likeClass(int.class, Integer.class));
     }
 
     public TestA<String, List<String>> testA() {
@@ -44,6 +41,24 @@ public class SimpleTest {
 
         public void setMap(Map<Integer, Double> map) {
             this.map = map;
+        }
+
+        public void aList(String a) {
+            System.out.println("single string " + a);
+        }
+
+        public void aList(int a) {
+            System.out.println("single int " + a);
+        }
+
+        public void aList(int a, int... b) {
+            System.out.println(a);
+            System.out.println(Arrays.toString(b));
+        }
+
+        public void aList(String a, int... b) {
+            System.out.println(a);
+            System.out.println(Arrays.toString(b));
         }
     }
 
