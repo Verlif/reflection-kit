@@ -43,6 +43,7 @@ public class FieldUtil {
         do {
             try {
                 field = target.getDeclaredField(fieldName);
+                break;
             } catch (NoSuchFieldException ignored) {
                 target = target.getSuperclass();
             }

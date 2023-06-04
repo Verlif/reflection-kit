@@ -1,9 +1,11 @@
 package idea.verlif.test;
 
+import idea.verlif.reflection.util.FieldUtil;
 import idea.verlif.reflection.util.MethodUtil;
 import idea.verlif.reflection.util.ReflectUtil;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +14,9 @@ public class SimpleTest {
 
     @Test
     public void test() throws Exception {
+        TestB<Object> objectTestB = new TestB<>();
+        objectTestB.setList(new ArrayList<>());
+        System.out.println(FieldUtil.getFieldValue(objectTestB, "list"));
         MethodUtil.invoke(new TestB<String>(), "aList", "123");
         System.out.println(ReflectUtil.likeClass(Integer.class, int.class));
         System.out.println(ReflectUtil.likeClass(int.class, Integer.class));
