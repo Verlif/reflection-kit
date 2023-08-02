@@ -9,8 +9,10 @@ import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * 方法工具类
@@ -26,12 +28,27 @@ public class MethodUtil {
      * @return 目标类的方法列表，包括父类
      */
     public static List<Method> getAllMethods(Class<?> cla) {
+        return getAllMethods(cla, null);
+    }
+
+    /**
+     * 通过过滤获取类的所有方法
+     *
+     * @param cla    目标类
+     * @param filter 方法过滤
+     * @return 目标类的方法列表，包括父类
+     */
+    public static List<Method> getAllMethods(Class<?> cla, Predicate<Method> filter) {
         List<Method> methods = new ArrayList<>();
         do {
             Collections.addAll(methods, cla.getDeclaredMethods());
             cla = cla.getSuperclass();
         } while (cla != null);
-        return methods;
+        if (filter == null) {
+            return methods;
+        } else {
+            return methods.stream().filter(filter).collect(Collectors.toList());
+        }
     }
 
     /**
@@ -120,7 +137,8 @@ public class MethodUtil {
      */
     public static Method getMethod(Class<?> target, String name, Class<?>... paramTypes) {
         Method like = null;
-        METHOD_LOOP: for (Method method : getAllMethods(target)) {
+        METHOD_LOOP:
+        for (Method method : getAllMethods(target)) {
             if (method.getName().equals(name)) {
                 int mpl = method.getParameterCount();
                 int pl = paramTypes.length;

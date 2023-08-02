@@ -4,11 +4,13 @@ import idea.verlif.reflection.util.FieldUtil;
 import idea.verlif.reflection.util.MethodUtil;
 import idea.verlif.reflection.util.ReflectUtil;
 import org.junit.Test;
+import stopwatch.Stopwatch;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class SimpleTest {
 
@@ -20,6 +22,21 @@ public class SimpleTest {
         MethodUtil.invoke(new TestB<String>(), "aList", "123");
         System.out.println(ReflectUtil.likeClass(Integer.class, int.class));
         System.out.println(ReflectUtil.likeClass(int.class, Integer.class));
+    }
+
+    @Test
+    public void recalculate() {
+        Stopwatch stopwatch = new Stopwatch();
+        stopwatch.start();
+        for (int i = 0; i < 1000; i++) {
+            ReflectUtil.noPrimitive(short.class);
+        }
+        stopwatch.pin();
+        for (int i = 0; i < 1000; i++) {
+            ReflectUtil.toPrimitive(short.class);
+        }
+        stopwatch.stop();
+        System.out.println(Arrays.toString(stopwatch.getIntervalLine(TimeUnit.MICROSECONDS).toArray()));
     }
 
     public TestA<String, List<String>> testA() {

@@ -194,7 +194,7 @@ public class ReflectUtil {
                 // 遍历构造器参数并逐一校验参数类型是否相同
                 for (int i = 0; i < types.length; i++) {
                     // 参数不相同则跳过此构造器
-                    if (!recalculate(types[i]).isAssignableFrom(params[i].getClass())) {
+                    if (!noPrimitive(types[i]).isAssignableFrom(params[i].getClass())) {
                         continue LOOP_constructor;
                     }
                 }
@@ -204,37 +204,63 @@ public class ReflectUtil {
         return null;
     }
 
-    private static Class<?> recalculate(Class<?> cl) {
-        switch (cl.getSimpleName()) {
-            case "int":
-                cl = Integer.class;
-                break;
-            case "double":
-                cl = Double.class;
-                break;
-            case "float":
-                cl = Float.class;
-                break;
-            case "byte":
-                cl = Byte.class;
-                break;
-            case "short":
-                cl = Short.class;
-                break;
-            case "long":
-                cl = Long.class;
-                break;
-            case "boolean":
-                cl = Boolean.class;
-                break;
-            case "char":
-                cl = Character.class;
-                break;
-            default:
+    /**
+     * 将基础类型转换成包装类型
+     *
+     * @param cl 目标类
+     * @return 转换后的类
+     */
+    public static Class<?> noPrimitive(Class<?> cl) {
+        if (cl.isPrimitive()) {
+            if (cl == int.class) {
+                return Integer.class;
+            } else if (cl == float.class) {
+                return Float.class;
+            } else if (cl == long.class) {
+                return Long.class;
+            } else if (cl == char.class) {
+                return Character.class;
+            } else if (cl == double.class) {
+                return Double.class;
+            } else if (cl == boolean.class) {
+                return Boolean.class ;
+            } else if (cl == byte.class) {
+                return Byte.class;
+            } else if (cl == short.class) {
+                return Short.class;
+            }
         }
         return cl;
     }
 
+    /**
+     * 将包装类型转换成基础类型
+     *
+     * @param cl 目标类
+     * @return 转换后的类
+     */
+    public static Class<?> toPrimitive(Class<?> cl) {
+        if (!cl.isPrimitive()) {
+            if (cl == Integer.class) {
+                return int.class;
+            } else if (cl == Float.class) {
+                return float.class;
+            } else if (cl == Long.class) {
+                return long.class;
+            } else if (cl == Character.class) {
+                return char.class;
+            } else if (cl == Double.class) {
+                return double.class;
+            } else if (cl == Boolean.class) {
+                return boolean.class ;
+            } else if (cl == Byte.class) {
+                return byte.class;
+            } else if (cl == Short.class) {
+                return short.class;
+            }
+        }
+        return cl;
+    }
 
     /**
      * 判断两个类是否相似。方法的两个参数顺序并无影响，只会比较两个类是否是同一个类型，包装类与基本类型也会判定相似。

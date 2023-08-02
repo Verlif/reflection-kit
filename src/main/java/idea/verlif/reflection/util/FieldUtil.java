@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * 属性工具
@@ -23,12 +25,27 @@ public class FieldUtil {
      * @return 目标类的属性列表，包括父类
      */
     public static List<Field> getAllFields(Class<?> cla) {
+        return getAllFields(cla, null);
+    }
+
+    /**
+     * 通过过滤获取类的所有属性
+     *
+     * @param cla    目标类
+     * @param filter 属性过滤
+     * @return 目标类的属性列表，包括父类
+     */
+    public static List<Field> getAllFields(Class<?> cla, Predicate<Field> filter) {
         List<Field> fields = new ArrayList<>();
         do {
             Collections.addAll(fields, cla.getDeclaredFields());
             cla = cla.getSuperclass();
         } while (cla != null);
-        return fields;
+        if (filter == null) {
+            return fields;
+        } else {
+            return fields.stream().filter(filter).collect(Collectors.toList());
+        }
     }
 
     /**
