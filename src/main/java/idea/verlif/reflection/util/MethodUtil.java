@@ -6,6 +6,7 @@ import idea.verlif.reflection.domain.SFunction;
 
 import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.Array;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -164,6 +165,86 @@ public class MethodUtil {
             }
         }
         return like;
+    }
+
+
+    /**
+     * 获取类的属性set方法
+     *
+     * @param target 目标类
+     * @param field  属性对象
+     * @return 属性set方法
+     */
+    public static Method getSetter(Class<?> target, Field field) {
+        String name = field.getName();
+        char first = name.charAt(0);
+        return getMethod(target, "set" + toUpper(first) + name.substring(1), field.getType());
+    }
+
+    /**
+     * 获取类的属性set方法
+     *
+     * @param target    目标类
+     * @param fieldName 属性名
+     * @return 属性set方法
+     */
+    public static <T> Method getSetter(Class<T> target, String fieldName) {
+        Field field = FieldUtil.getField(target, fieldName);
+        return getSetter(target, field);
+    }
+
+    /**
+     * 获取类的属性set方法
+     *
+     * @param target   目标类
+     * @param function 属性getter的lambda表达式
+     * @return 属性set方法
+     */
+    public static <T> Method getSetter(Class<T> target, SFunction<T, ?> function) {
+        Field field = FieldUtil.getFieldFromLambda(function);
+        return getSetter(target, field);
+    }
+
+    private static char toUpper(char c) {
+        if (c >= 'a' && c <= 'z') {
+            return (char) (c - 'a' + 'A');
+        }
+        return c;
+    }
+
+    /**
+     * 获取类的属性get方法
+     *
+     * @param target 目标类
+     * @param field  属性对象
+     * @return 属性get方法
+     */
+    public static Method getGetter(Class<?> target, Field field) {
+        return getGetter(target, field.getName());
+    }
+
+    /**
+     * 获取类的属性get方法
+     *
+     * @param target    目标类
+     * @param fieldName 属性名
+     * @return 属性get方法
+     */
+    public static <T> Method getGetter(Class<T> target, String fieldName) {
+        char first = fieldName.charAt(0);
+        return getMethod(target, "get" + toUpper(first) + fieldName.substring(1));
+    }
+
+    /**
+     * 获取类的属性get方法
+     *
+     * @param target   目标类
+     * @param function 属性getter的lambda表达式
+     * @return 属性get方法
+     */
+    public static <T> Method getGetter(Class<T> target, SFunction<T, ?> function) {
+        Field field = FieldUtil.getFieldFromLambda(function);
+        return getGetter(target, field);
     }
 
     /**
