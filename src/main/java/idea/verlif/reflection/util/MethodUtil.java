@@ -99,10 +99,10 @@ public class MethodUtil {
             }
             ClassGrc info = null;
             // 解析返回值
-            if (sig.length() > 0) {
+            if (!sig.isEmpty()) {
                 // 是否是泛型
                 String sigName = sig.substring(0, sig.length() - 1);
-                if (sigName.length() > 0) {
+                if (!sigName.isEmpty()) {
                     info = SignatureUtil.parseClassBySignature(sigName, genericsMap);
                 }
             }
@@ -167,6 +167,15 @@ public class MethodUtil {
         return like;
     }
 
+    /**
+     * 获取类的属性set方法
+     *
+     * @param field  属性对象
+     * @return 属性set方法
+     */
+    public static Method getSetter(Field field) {
+        return getSetter(field.getDeclaringClass(), field);
+    }
 
     /**
      * 获取类的属性set方法
@@ -210,6 +219,16 @@ public class MethodUtil {
             return (char) (c - 'a' + 'A');
         }
         return c;
+    }
+
+    /**
+     * 获取类的属性get方法
+     *
+     * @param field  属性对象
+     * @return 属性get方法
+     */
+    public static Method getGetter(Field field) {
+        return getGetter(field.getDeclaringClass(), field.getName());
     }
 
     /**
@@ -265,7 +284,7 @@ public class MethodUtil {
         }
         expr = matcher.group(1);
         Class<?>[] claArray;
-        if (expr.length() == 0) {
+        if (expr.isEmpty()) {
             claArray = new Class[0];
         } else {
             claArray = Arrays.stream(expr.split(";"))

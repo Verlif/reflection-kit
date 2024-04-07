@@ -17,6 +17,8 @@ import java.util.Map;
  */
 public class ReflectUtil {
 
+    private static final ClassGrc OBJECT_CLASS_GRC = new ClassGrc();
+
     /**
      * 获取类的泛型标记表
      *
@@ -86,8 +88,14 @@ public class ReflectUtil {
                 genericsMap.put(parameters[i].getName(), getClassGrc(arguments[i]));
             }
         }
+        // 避免替换已获取的类型
         if (rawType instanceof Class) {
-            genericsMap.putAll(getGenericsMap((Class<?>) rawType));
+            Map<String, ClassGrc> classGrcMap = getGenericsMap((Class<?>) rawType);
+            for (Map.Entry<String, ClassGrc> grcEntry : classGrcMap.entrySet()) {
+                if (!genericsMap.containsKey(grcEntry.getKey())) {
+                    genericsMap.put(grcEntry.getKey(), grcEntry.getValue());
+                }
+            }
         }
 
         return genericsMap;
@@ -111,7 +119,7 @@ public class ReflectUtil {
         } else if (type instanceof Class) {
             return new ClassGrc((Class<?>) type);
         } else {
-            return new ClassGrc();
+            return OBJECT_CLASS_GRC;
         }
     }
 
@@ -223,7 +231,7 @@ public class ReflectUtil {
             } else if (cl == double.class) {
                 return Double.class;
             } else if (cl == boolean.class) {
-                return Boolean.class ;
+                return Boolean.class;
             } else if (cl == byte.class) {
                 return Byte.class;
             } else if (cl == short.class) {
@@ -252,7 +260,7 @@ public class ReflectUtil {
             } else if (cl == Double.class) {
                 return double.class;
             } else if (cl == Boolean.class) {
-                return boolean.class ;
+                return boolean.class;
             } else if (cl == Byte.class) {
                 return byte.class;
             } else if (cl == Short.class) {
@@ -264,6 +272,7 @@ public class ReflectUtil {
 
     /**
      * 判断两个类是否相似。方法的两个参数顺序并无影响，只会比较两个类是否是同一个类型，包装类与基本类型也会判定相似。
+     *
      * @param cla1 左侧类
      * @param cla2 右侧类
      * @return 两个类是否相似。
